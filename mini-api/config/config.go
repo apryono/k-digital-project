@@ -7,6 +7,8 @@ import (
 
 	"github.com/go-redis/redis"
 	"github.com/joho/godotenv"
+	"github.com/k-digital-project/mini-api/pkg/aes"
+	"github.com/k-digital-project/mini-api/pkg/aesfront"
 	"github.com/k-digital-project/mini-api/pkg/jwe"
 	"github.com/k-digital-project/mini-api/pkg/jwt"
 	postgrespkg "github.com/k-digital-project/mini-api/pkg/postgresql"
@@ -21,6 +23,8 @@ type Configs struct {
 	RedisClient redisPkg.RedisClient
 	JweCred     jwe.Credential
 	JwtCred     jwt.Credential
+	Aes         aes.Credential
+	AesFront    aesfront.Credential
 }
 
 //LoadConfigs load all configurations
@@ -69,6 +73,17 @@ func LoadConfigs() (res Configs, err error) {
 		ExpSecret:        str.StringToInt(res.EnvConfig["TOKEN_EXP_SECRET"]),
 		RefreshSecret:    res.EnvConfig["TOKEN_REFRESH_SECRET"],
 		RefreshExpSecret: str.StringToInt(res.EnvConfig["TOKEN_EXP_REFRESH_SECRET"]),
+	}
+
+	// aes
+	res.Aes = aes.Credential{
+		Key: res.EnvConfig["AES_KEY"],
+	}
+
+	// aes front
+	res.AesFront = aesfront.Credential{
+		Key: res.EnvConfig["AES_FRONT_KEY"],
+		Iv:  res.EnvConfig["AES_FRONT_IV"],
 	}
 
 	return res, err

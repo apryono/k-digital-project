@@ -15,4 +15,6 @@ var (
 	ExpiredToken = "expired_token"
 	// DuplicateEmail ...
 	DuplicateEmail = "duplicate_email"
+	// InvalidPassword ...
+	InvalidPassword = "invalid_password"
 )

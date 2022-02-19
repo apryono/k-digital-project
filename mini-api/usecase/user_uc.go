@@ -19,6 +19,7 @@ type UserUC struct {
 }
 
 func (uc UserUC) BuildBody(res *models.User, showPassword bool) {
+	res.Password = str.ShowString(showPassword, uc.ContractUC.Aes.DecryptString(res.Password))
 }
 
 func (uc UserUC) FindByEmail(c context.Context, parameter models.UserParamater, showPassword bool) (res models.User, err error) {
@@ -36,6 +37,8 @@ func (uc UserUC) FindByEmail(c context.Context, parameter models.UserParamater, 
 }
 
 func (uc UserUC) Add(c context.Context, input *requests.UserRequest, isVerifiedEmail bool) (res models.User, err error) {
+	_ = uc.checkDetail(c, input)
+
 	res = models.User{
 		Name:         input.Name,
 		Email:        input.Email,
@@ -57,4 +60,12 @@ func (uc UserUC) Add(c context.Context, input *requests.UserRequest, isVerifiedE
 	}
 
 	return res, err
+}
+
+func (uc UserUC) checkDetail(c context.Context, input *requests.UserRequest) (err error) {
+	if input.Password != "" {
+		input.Password = uc.Aes.EncryptString(input.Password)
+	}
+
+	return err
 }
