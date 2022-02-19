@@ -1,18 +1,17 @@
 package models
 
 type User struct {
-	ID             string  `json:"id"`
-	Email          string  `json:"email"`
-	EmailValidAt   *string `json:"email_valid_at"`
-	Name           string  `json:"name"`
-	Password       string  `json:"password"`
-	Status         string  `json:"status"`
-	RegisterType   string  `json:"register_type"`
-	RegisterDetail string  `json:"register_detail"`
-	LastSeen       string  `json:"last_seen"`
-	CreatedAt      string  `json:"created_at"`
-	UpdatedAt      string  `json:"updated_at"`
-	DeletedAt      *string `json:"deleted_at"`
+	ID           string  `json:"id"`
+	Email        string  `json:"email"`
+	EmailValidAt *string `json:"email_valid_at"`
+	Name         string  `json:"name"`
+	Password     string  `json:"password"`
+	Status       string  `json:"status"`
+	RegisterType string  `json:"register_type"`
+	LastSeen     string  `json:"last_seen"`
+	CreatedAt    string  `json:"created_at"`
+	UpdatedAt    string  `json:"updated_at"`
+	DeletedAt    *string `json:"deleted_at"`
 }
 
 // UserParamater ...
@@ -40,9 +39,9 @@ var (
 	UserSelectStatement = `
 	SELECT 
 	def.id, def.name, def.email, def.password, 
-	def.status, def.register_type, def.register_detail, def.email_valid_at, def.last_seen,
+	def.status, def.register_type, def.email_valid_at, def.last_seen,
 	def.created_at, def.updated_at
-	FROM users def
+	FROM "users" def
 	`
 
 	// UserOrderBy ...
