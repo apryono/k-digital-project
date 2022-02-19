@@ -53,3 +53,28 @@ func (cred *Credential) EncryptString(textString string) string {
 
 	return res
 }
+
+// DecryptString ...
+func (cred *Credential) DecryptString(text string) string {
+	key := cred.shaKey()
+	ciphertext, _ := hex.DecodeString(text)
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		return ""
+	}
+	if len(ciphertext) < aes.BlockSize {
+		return ""
+	}
+	iv := ciphertext[:aes.BlockSize]
+	ciphertext = ciphertext[aes.BlockSize:]
+	cfb := cipher.NewCFBDecrypter(block, iv)
+	cfb.XORKeyStream(ciphertext, ciphertext)
+	data, err := base64.StdEncoding.DecodeString(string(ciphertext))
+	if err != nil {
+		return ""
+	}
+
+	res := string(data[:])
+	return res
+}
