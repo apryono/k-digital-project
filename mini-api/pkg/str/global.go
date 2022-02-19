@@ -11,3 +11,12 @@ func StringToInt(data string) int {
 
 	return res
 }
+
+// ShowString ...
+func ShowString(isShow bool, data string) string {
+	if isShow {
+		return data
+	}
+
+	return ""
+}
