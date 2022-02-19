@@ -4,7 +4,7 @@ type ResponseErrorVM struct {
 	Messages interface{} `json:"messages"`
 }
 
-type ResponsesSuccessVM struct {
+type ResponseSuccessVM struct {
 	Data interface{} `json:"data"`
 	Meta interface{} `json:"meta"`
 }
