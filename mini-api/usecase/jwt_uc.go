@@ -22,24 +22,24 @@ func (uc JwtUC) GenerateToken(c context.Context, payload map[string]interface{},
 	payload["device_id"] = deviceID
 	err = uc.StoreToRedisExp("userDeviceID"+payload["user_id"].(string), deviceID, uc.EnvConfig["TOKEN_EXP_SECRET"]+"m")
 	if err != nil {
-		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "device_id", c.Value("requestid"))
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "device_id")
 		return errors.New(helper.InternalServer)
 	}
 
 	jwePayload, err := uc.ContractUC.JweCred.Generate(payload)
 	if err != nil {
-		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "jwe", c.Value("requestid"))
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "jwe")
 		return errors.New(helper.JWT)
 	}
 
 	res.Token, res.ExpiredDate, err = uc.ContractUC.JwtCred.GetToken(jwePayload)
 	if err != nil {
-		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "jwt", c.Value("requestid"))
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "jwt")
 		return errors.New(helper.JWT)
 	}
 	res.RefreshToken, res.RefreshExpiredDate, err = uc.ContractUC.JwtCred.GetRefreshToken(jwePayload)
 	if err != nil {
-		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "refresh_jwt", c.Value("requestid"))
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), ctx, "refresh_jwt")
 		return errors.New(helper.JWT)
 	}
 
