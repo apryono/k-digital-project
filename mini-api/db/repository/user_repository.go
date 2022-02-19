@@ -3,7 +3,6 @@ package repository
 import (
 	"context"
 	"database/sql"
-	"fmt"
 	"strings"
 
 	"github.com/k-digital-project/mini-api/db/repository/models"
@@ -56,11 +55,9 @@ func (repository UserRepository) FindByEmail(c context.Context, parameter models
 
 //Add ...
 func (repository UserRepository) Add(c context.Context, model *models.User) (res string, err error) {
-	statement := `INSERT INTO "user" 
+	statement := `INSERT INTO "users" 
 	(name, email, email_valid_at, password, status, register_type)
 	VALUES ($1, $2, $3, $4, $5, $6) returning id`
-
-	fmt.Println(statement)
 
 	if repository.Tx != nil {
 		err = repository.Tx.QueryRowContext(c, statement,
