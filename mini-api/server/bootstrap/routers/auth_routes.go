@@ -22,4 +22,5 @@ func (route AuthRoutes) RegisterRoute() {
 	r := route.RouterGroup.Group("/api/auth")
 	r.Use(middlewares.SavingContextValue(time.Duration(str.StringToInt(route.Handler.ContractUC.EnvConfig["APP_TIMEOUT"])) * time.Second))
 	r.Post("/register/email", handler.RegisterByEmail)
+	r.Post("/login/email", handler.UserLogin)
 }
