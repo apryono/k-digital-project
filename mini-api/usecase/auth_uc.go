@@ -22,17 +22,21 @@ type AuthUC struct {
 func (uc AuthUC) RegisterByEmail(c context.Context, data *requests.RegisterByEmailRequest) (res viewmodel.JwtVM, err error) {
 
 	userUc := UserUC{ContractUC: uc.ContractUC}
-	user, _ := userUc.FindByEmail(c, models.UserParamater{Email: data.Email}, false)
+	user, err := userUc.FindByEmail(c, models.UserParamater{Email: data.Email}, false)
+	if err != nil {
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "query-find")
+	}
 
 	if user.ID == "" {
 		userRequest := requests.UserRequest{
 			Name:         data.Name,
 			Email:        data.Email,
-			Status:       models.UserStatusPending,
+			Password:     data.Password,
+			Status:       models.UserStatusActive,
 			RegisterType: models.UserRegisterTypeEmail,
 		}
 
-		user, err = userUc.Add(c, &userRequest, false)
+		user, err = userUc.Add(c, &userRequest, true)
 		if err != nil {
 			loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "query-add")
 			return res, err
