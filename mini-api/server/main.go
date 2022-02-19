@@ -53,6 +53,8 @@ func main() {
 		RedisClient: configs.RedisClient,
 		JweCred:     configs.JweCred,
 		JwtCred:     configs.JwtCred,
+		Aes:         configs.Aes,
+		AesFront:    configs.AesFront,
 	}
 
 	boot := bootstrap.Bootstrap{
