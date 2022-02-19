@@ -36,6 +36,8 @@ func (uc UserUC) FindByEmail(c context.Context, parameter models.UserParamater, 
 }
 
 func (uc UserUC) Add(c context.Context, input *requests.UserRequest, isVerifiedEmail bool) (res models.User, err error) {
+	_ = uc.checkDetail(c, input)
+
 	res = models.User{
 		Name:         input.Name,
 		Email:        input.Email,
@@ -57,4 +59,12 @@ func (uc UserUC) Add(c context.Context, input *requests.UserRequest, isVerifiedE
 	}
 
 	return res, err
+}
+
+func (uc UserUC) checkDetail(c context.Context, input *requests.UserRequest) (err error) {
+	if input.Password != "" {
+		input.Password = uc.Aes.EncryptString(input.Password)
+	}
+
+	return err
 }
