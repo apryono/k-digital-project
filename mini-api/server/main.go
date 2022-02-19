@@ -46,10 +46,13 @@ func main() {
 	})
 
 	ContractUC := usecase.ContractUC{
-		EnvConfig:  configs.EnvConfig,
-		DB:         configs.DB,
-		Validate:   validatorDriver,
-		Translator: translator,
+		EnvConfig:   configs.EnvConfig,
+		DB:          configs.DB,
+		Validate:    validatorDriver,
+		Translator:  translator,
+		RedisClient: configs.RedisClient,
+		JweCred:     configs.JweCred,
+		JwtCred:     configs.JwtCred,
 	}
 
 	boot := bootstrap.Bootstrap{

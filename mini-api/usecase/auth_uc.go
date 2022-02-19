@@ -5,8 +5,8 @@ import (
 	"database/sql"
 	"errors"
 
-	"github.com/k-digital-project/mini-api/db/helper"
 	"github.com/k-digital-project/mini-api/db/repository/models"
+	"github.com/k-digital-project/mini-api/helper"
 	"github.com/k-digital-project/mini-api/pkg/functioncaller"
 	"github.com/k-digital-project/mini-api/pkg/loggerpkg"
 	"github.com/k-digital-project/mini-api/usecase/requests"
@@ -42,7 +42,26 @@ func (uc AuthUC) RegisterByEmail(c context.Context, data *requests.RegisterByEma
 		return res, errors.New(helper.DuplicateEmail)
 	}
 
-	//generate token
+	res, err = uc.GenerateToken(c, user.ID)
+	if err != nil {
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "generate_token")
+		return res, err
+	}
+
+	return res, err
+}
+
+// GenerateToken ...
+func (uc AuthUC) GenerateToken(c context.Context, id string) (res viewmodel.JwtVM, err error) {
+	payload := map[string]interface{}{
+		"user_id": id,
+	}
+	jwtUc := JwtUC{ContractUC: uc.ContractUC}
+	err = jwtUc.GenerateToken(c, payload, &res)
+	if err != nil {
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "generate_token")
+		return res, err
+	}
 
 	return res, err
 }
