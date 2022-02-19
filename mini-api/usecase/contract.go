@@ -8,6 +8,8 @@ import (
 
 	ut "github.com/go-playground/universal-translator"
 	validator "github.com/go-playground/validator/v10"
+	"github.com/k-digital-project/mini-api/pkg/aes"
+	"github.com/k-digital-project/mini-api/pkg/aesfront"
 	"github.com/k-digital-project/mini-api/pkg/jwe"
 	"github.com/k-digital-project/mini-api/pkg/jwt"
 	"github.com/k-digital-project/mini-api/pkg/loggerpkg"
@@ -22,6 +24,8 @@ type ContractUC struct {
 	RedisClient redis.RedisClient
 	JweCred     jwe.Credential
 	JwtCred     jwt.Credential
+	Aes         aes.Credential
+	AesFront    aesfront.Credential
 }
 
 // StoreToRedisExp save data to redis with key and exp time
