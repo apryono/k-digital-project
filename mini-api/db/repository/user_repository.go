@@ -27,8 +27,7 @@ func NewUserRepository(DB *sql.DB, Tx *sql.Tx) IUserRepository {
 func (repository UserRepository) scanRow(row *sql.Row) (res models.User, err error) {
 	err = row.Scan(
 		&res.ID, &res.Name, &res.Email, &res.Password,
-		&res.Status, &res.RegisterType, &res.RegisterDetail,
-		&res.EmailValidAt, &res.LastSeen, &res.CreatedAt, &res.UpdatedAt,
+		&res.Status, &res.RegisterType, &res.EmailValidAt, &res.LastSeen, &res.CreatedAt, &res.UpdatedAt,
 	)
 	if err != nil {
 		return res, err
@@ -42,7 +41,7 @@ func (repository UserRepository) FindByEmail(c context.Context, parameter models
 	if str.Contains(models.UserStatusWhitelist, parameter.Status) {
 		conditionString += ` AND lower(def.status) = '` + strings.ToLower(parameter.Status) + `'`
 	}
-	statement := str.Spacing(models.UserSelectStatement, models.UserWhereStatement, ` AND lower(def.email) ilike $1`, conditionString, models.UserGroupByStatement)
+	statement := str.Spacing(models.UserSelectStatement, models.UserWhereStatement, ` AND lower(def.email) = $1`, conditionString)
 
 	row := repository.DB.QueryRowContext(c, statement, strings.ToLower(parameter.Email))
 	res, err = repository.scanRow(row)
