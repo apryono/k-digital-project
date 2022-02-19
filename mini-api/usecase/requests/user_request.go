@@ -7,5 +7,4 @@ type UserRequest struct {
 	Password       string      `json:"password"`
 	Status         string      `json:"status"`
 	RegisterType   string      `json:"register_type"`
-	RegisterDetail interface{} `json:"register_detail"`
 }
