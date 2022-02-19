@@ -19,6 +19,7 @@ type UserUC struct {
 }
 
 func (uc UserUC) BuildBody(res *models.User, showPassword bool) {
+	res.Password = str.ShowString(showPassword, uc.ContractUC.Aes.DecryptString(res.Password))
 }
 
 func (uc UserUC) FindByEmail(c context.Context, parameter models.UserParamater, showPassword bool) (res models.User, err error) {
