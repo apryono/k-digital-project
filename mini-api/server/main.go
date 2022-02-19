@@ -5,6 +5,12 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/go-playground/locales/en"
+	"github.com/go-playground/locales/id"
+	ut "github.com/go-playground/universal-translator"
+	"github.com/go-playground/validator/v10"
+	enTranslations "github.com/go-playground/validator/v10/translations/en"
+	idTranslations "github.com/go-playground/validator/v10/translations/id"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/cors"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
@@ -18,7 +24,10 @@ import (
 )
 
 var (
-	logFormat = `{"host":"${host}","pid":"${pid}","time":"${time}","req_id":"${locals:requestid}","status":"${status}","method":"${method}","latency":"${latency}","path":"${path}",` +
+	validatorDriver *validator.Validate
+	uni             *ut.UniversalTranslator
+	translator      ut.Translator
+	logFormat       = `{"host":"${host}","pid":"${pid}","time":"${time}","req_id":"${locals:requestid}","status":"${status}","method":"${method}","latency":"${latency}","path":"${path}",` +
 		`"user_agent":"${ua}","in":"${bytesReceived}", "req_body":"", "out":"${bytesSent}","res_body":"${resBody}"}`
 )
 
@@ -27,19 +36,27 @@ func main() {
 	if err != nil {
 		log.Fatal(err.Error())
 	}
+	defer configs.DB.Close()
+
+	// init validation driver
+	validatorInit(&configs)
 
 	app := fiber.New(fiber.Config{
 		ErrorHandler: middlewares.InternalServer,
 	})
 
 	ContractUC := usecase.ContractUC{
-		EnvConfig: configs.EnvConfig,
-		DB:        configs.DB,
+		EnvConfig:  configs.EnvConfig,
+		DB:         configs.DB,
+		Validate:   validatorDriver,
+		Translator: translator,
 	}
 
 	boot := bootstrap.Bootstrap{
 		App:        app,
 		ContractUC: ContractUC,
+		Validator:  validatorDriver,
+		Translator: translator,
 	}
 	boot.App.Use(limiter.New(limiter.Config{
 		Max:        100,
@@ -66,5 +83,26 @@ func main() {
 	}))
 	boot.RegisterRouters()
 	log.Fatal(boot.App.Listen(configs.EnvConfig["APP_HOST"]))
-	defer configs.DB.Close()
+
+}
+
+func validatorInit(configs *conf.Configs) {
+	en := en.New()
+	id := id.New()
+	uni = ut.New(en, id)
+
+	transEN, _ := uni.GetTranslator("en")
+	transID, _ := uni.GetTranslator("id")
+
+	validatorDriver = validator.New()
+
+	enTranslations.RegisterDefaultTranslations(validatorDriver, transEN)
+	idTranslations.RegisterDefaultTranslations(validatorDriver, transID)
+
+	switch configs.EnvConfig["APP_LOCALE"] {
+	case "en":
+		translator = transEN
+	case "id":
+		translator = transID
+	}
 }
