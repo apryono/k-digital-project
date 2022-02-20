@@ -12,6 +12,9 @@ import (
 type IUserRepository interface {
 	Add(c context.Context, model *models.User) (string, error)
 	FindByEmail(c context.Context, parameter models.UserParamater) (models.User, error)
+	Edit(c context.Context, model *models.User) (string, error)
+	EditLastSeen(c context.Context, model models.User) (string, error)
+	FindByID(c context.Context, parameter models.UserParamater) (models.User, error)
 }
 
 type UserRepository struct {
@@ -67,6 +70,58 @@ func (repository UserRepository) Add(c context.Context, model *models.User) (res
 			model.Name, model.Email, model.EmailValidAt, model.Password, model.Status, model.RegisterType,
 		).Scan(&res)
 	}
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+// Edit ...
+func (repository UserRepository) Edit(c context.Context, model *models.User) (res string, err error) {
+	statement := `UPDATE "user"
+		SET name = $1, email = $2, password = $3, status = $4 WHERE id = $5 RETURNING id
+	`
+	if repository.Tx != nil {
+		err = repository.Tx.QueryRowContext(c, statement,
+			&model.Name, &model.Email, &model.Password, &model.Status, &model.ID).Scan(&res)
+	} else {
+		err = repository.DB.QueryRowContext(c, statement,
+			&model.Name, &model.Email, &model.Password, &model.Status, &model.ID).Scan(&res)
+	}
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+// EditLastSeen ...
+func (repository UserRepository) EditLastSeen(c context.Context, model models.User) (res string, err error) {
+	statement := `UPDATE "user" SET last_seen = $1 WHERE deleted_at IS NULL AND id = $2 RETURNING "id"`
+
+	if repository.Tx != nil {
+		err = repository.Tx.QueryRow(statement, model.LastSeen, model.ID).Scan(&res)
+	} else {
+		err = repository.DB.QueryRow(statement, model.LastSeen, model.ID).Scan(&res)
+	}
+
+	if err != nil {
+		return res, err
+	}
+
+	return res, nil
+}
+
+//FindByID ...
+func (repository UserRepository) FindByID(c context.Context, parameter models.UserParamater) (res models.User, err error) {
+	var conditionString string
+	if str.Contains(models.UserStatusWhitelist, parameter.Status) {
+		conditionString += ` AND lower(def.status) = '` + strings.ToLower(parameter.Status) + `'`
+	}
+	statement := str.Spacing(models.UserSelectStatement, models.UserWhereStatement, ` AND id = $1`, conditionString)
+	row := repository.DB.QueryRowContext(c, statement, parameter.ID)
+	res, err = repository.scanRow(row)
 	if err != nil {
 		return res, err
 	}
