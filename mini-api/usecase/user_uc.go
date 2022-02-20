@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"time"
 
 	"github.com/k-digital-project/mini-api/db/repository"
@@ -90,7 +89,6 @@ func (uc UserUC) Edit(c context.Context, id string, input *requests.UserRequest)
 	user, _ := uc.FindByID(c, models.UserParamater{ID: id}, false)
 	if user.Email != "" {
 		if user.Email == input.Email {
-			fmt.Println("Masuk error")
 			loggerpkg.Log(loggerpkg.WarnLevel, helper.DuplicateEmail, functioncaller.PrintFuncName(), "find_user", c.Value("requestid"))
 			return res, errors.New(helper.DuplicateEmail)
 		}
