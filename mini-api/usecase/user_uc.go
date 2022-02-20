@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/k-digital-project/mini-api/db/repository"
@@ -79,16 +80,20 @@ func (uc UserUC) checkDetail(c context.Context, input *requests.UserRequest) (er
 }
 
 func (uc UserUC) Edit(c context.Context, id string, input *requests.UserRequest) (res models.User, err error) {
+
 	err = uc.checkDetail(c, input)
 	if err != nil {
 		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "check-detail", c.Value("requestid"))
 		return res, err
 	}
 
-	user, _ := uc.FindByEmail(c, models.UserParamater{Email: input.Email}, false)
-	if user.Email == input.Email {
-		loggerpkg.Log(loggerpkg.WarnLevel, helper.DuplicateEmail, functioncaller.PrintFuncName(), "find_user", c.Value("requestid"))
-		return res, errors.New(helper.DuplicateEmail)
+	user, _ := uc.FindByID(c, models.UserParamater{ID: id}, false)
+	if user.Email != "" {
+		if user.Email == input.Email {
+			fmt.Println("Masuk error")
+			loggerpkg.Log(loggerpkg.WarnLevel, helper.DuplicateEmail, functioncaller.PrintFuncName(), "find_user", c.Value("requestid"))
+			return res, errors.New(helper.DuplicateEmail)
+		}
 	}
 
 	res = models.User{
@@ -118,4 +123,18 @@ func (uc UserUC) UpdateLastSeen(c context.Context, userID string) (res string, e
 	})
 
 	return now.Format(time.RFC3339), err
+}
+
+func (uc UserUC) FindByID(c context.Context, parameter models.UserParamater, showPassword bool) (res models.User, err error) {
+
+	repo := repository.NewUserRepository(uc.DB, uc.Tx)
+	res, err = repo.FindByID(c, parameter)
+	if err != nil {
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "query-find-id")
+		return res, err
+	}
+
+	uc.BuildBody(&res, showPassword)
+
+	return res, err
 }
