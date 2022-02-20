@@ -79,7 +79,7 @@ func (repository UserRepository) Add(c context.Context, model *models.User) (res
 
 // Edit ...
 func (repository UserRepository) Edit(c context.Context, model *models.User) (res string, err error) {
-	statement := `UPDATE "user"
+	statement := `UPDATE "users"
 		SET name = $1, email = $2, password = $3, status = $4 WHERE id = $5 RETURNING id
 	`
 	if repository.Tx != nil {
@@ -98,7 +98,7 @@ func (repository UserRepository) Edit(c context.Context, model *models.User) (re
 
 // EditLastSeen ...
 func (repository UserRepository) EditLastSeen(c context.Context, model models.User) (res string, err error) {
-	statement := `UPDATE "user" SET last_seen = $1 WHERE deleted_at IS NULL AND id = $2 RETURNING "id"`
+	statement := `UPDATE "users" SET last_seen = $1 WHERE deleted_at IS NULL AND id = $2 RETURNING "id"`
 
 	if repository.Tx != nil {
 		err = repository.Tx.QueryRow(statement, model.LastSeen, model.ID).Scan(&res)
