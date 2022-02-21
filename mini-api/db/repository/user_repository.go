@@ -15,6 +15,7 @@ type IUserRepository interface {
 	Edit(c context.Context, model *models.User) (string, error)
 	EditLastSeen(c context.Context, model models.User) (string, error)
 	FindByID(c context.Context, parameter models.UserParamater) (models.User, error)
+	FindAllUser(c context.Context, parameter models.UserParamater) ([]models.User, error)
 }
 
 type UserRepository struct {
@@ -29,6 +30,18 @@ func NewUserRepository(DB *sql.DB, Tx *sql.Tx) IUserRepository {
 
 func (repository UserRepository) scanRow(row *sql.Row) (res models.User, err error) {
 	err = row.Scan(
+		&res.ID, &res.Name, &res.Email, &res.Password,
+		&res.Status, &res.RegisterType, &res.EmailValidAt, &res.LastSeen, &res.CreatedAt, &res.UpdatedAt,
+	)
+	if err != nil {
+		return res, err
+	}
+	return res, nil
+}
+
+// Scan rows
+func (repository UserRepository) scanRows(rows *sql.Rows) (res models.User, err error) {
+	err = rows.Scan(
 		&res.ID, &res.Name, &res.Email, &res.Password,
 		&res.Status, &res.RegisterType, &res.EmailValidAt, &res.LastSeen, &res.CreatedAt, &res.UpdatedAt,
 	)
@@ -127,4 +140,30 @@ func (repository UserRepository) FindByID(c context.Context, parameter models.Us
 	}
 
 	return res, nil
+}
+
+func (repository UserRepository) FindAllUser(c context.Context, parameter models.UserParamater) (res []models.User, err error) {
+	var conditionString string
+	if str.Contains(models.UserStatusWhitelist, parameter.Status) {
+		conditionString += ` AND lower(def.status) = '` + strings.ToLower(parameter.Status) + `'`
+	}
+	if parameter.Search != "" {
+		conditionString += ` AND lower(def.name) like '%` + strings.ToLower(parameter.Search) + `%'`
+	}
+
+	statement := str.Spacing(models.UserSelectStatement, models.UserWhereStatement, conditionString)
+	rows, err := repository.DB.QueryContext(c, statement)
+	if err != nil {
+		return res, err
+	}
+	defer rows.Close()
+	for rows.Next() {
+		temp, err := repository.scanRows(rows)
+		if err != nil {
+			return res, err
+		}
+		res = append(res, temp)
+	}
+
+	return res, err
 }
