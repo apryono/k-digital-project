@@ -136,3 +136,19 @@ func (uc UserUC) FindByID(c context.Context, parameter models.UserParamater, sho
 
 	return res, err
 }
+
+func (uc UserUC) FindAllUser(c context.Context, parameter models.UserParamater) (res []models.User, err error) {
+
+	repo := repository.NewUserRepository(uc.DB, uc.Tx)
+	res, err = repo.FindAllUser(c, parameter)
+	if err != nil {
+		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "query", c.Value("requestid"))
+		return res, err
+	}
+
+	for i := range res {
+		uc.BuildBody(&res[i], parameter.ShowPassword)
+	}
+
+	return res, err
+}
