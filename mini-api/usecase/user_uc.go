@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/k-digital-project/mini-api/db/repository"
@@ -138,12 +139,21 @@ func (uc UserUC) FindByID(c context.Context, parameter models.UserParamater, sho
 }
 
 func (uc UserUC) FindAllUser(c context.Context, parameter models.UserParamater) (res []models.User, err error) {
+	listAllUser := "ListAllUsers:" + fmt.Sprintf("%v", parameter)
 
-	repo := repository.NewUserRepository(uc.DB, uc.Tx)
-	res, err = repo.FindAllUser(c, parameter)
-	if err != nil {
-		loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "query", c.Value("requestid"))
-		return res, err
+	if err = uc.GetFromRedis(listAllUser, &res); err != nil {
+		repo := repository.NewUserRepository(uc.DB, uc.Tx)
+		res, err = repo.FindAllUser(c, parameter)
+		if err != nil {
+			loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "query", c.Value("requestid"))
+			return res, err
+		}
+
+		err = uc.StoreToRedisExp(listAllUser, &res, "10m")
+		if err != nil {
+			loggerpkg.Log(loggerpkg.WarnLevel, err.Error(), functioncaller.PrintFuncName(), "store_to_redis")
+			return res, errors.New(helper.InternalServer)
+		}
 	}
 
 	for i := range res {
