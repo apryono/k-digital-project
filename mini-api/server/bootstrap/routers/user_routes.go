@@ -20,8 +20,13 @@ func (route UserRoutes) RegisterRoute() {
 	handler := handlers.UserHandler{Handler: route.Handler}
 	jwtMiddleware := middlewares.JwtMiddleware{ContractUC: handler.ContractUC}
 
+	r1 := route.RouterGroup.Group("api/user")
+	r1.Use(middlewares.SavingContextValue(time.Duration(str.StringToInt(route.Handler.ContractUC.EnvConfig["APP_TIMEOUT"])) * time.Second))
+	r1.Get("", handler.FindAllUser)
+	
 	r := route.RouterGroup.Group("/api/user")
 	r.Use(jwtMiddleware.VerifyUser)
 	r.Use(middlewares.SavingContextValue(time.Duration(str.StringToInt(route.Handler.ContractUC.EnvConfig["APP_TIMEOUT"])) * time.Second))
 	r.Put("/edit", handler.EditUser)
+
 }
