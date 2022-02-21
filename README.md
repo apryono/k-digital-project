@@ -39,6 +39,8 @@ First use should git clone the project in folder github.com
 After that git pull from develop
 
 ```bash
+  git checkout -b dev
+
   git pull origin dev
 ```
 
